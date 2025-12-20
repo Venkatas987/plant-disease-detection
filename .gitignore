@@ -1,23 +1,5 @@
-# Ignore virtual environment
 venv/
-
-# Ignore Python cache
+data/
 __pycache__/
 *.pyc
-*.pyo
-*.pyd
-
-# Ignore Jupyter checkpoints
 .ipynb_checkpoints/
-
-# Ignore datasets or processed data (optional if large)
-data/processed/
-data/raw/
-
-# Ignore OS files
-.DS_Store
-Thumbs.db
-
-# Ignore IDE/editor folders
-.vscode/
-.idea/

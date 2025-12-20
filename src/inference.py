@@ -1,40 +1,46 @@
-import os
+import json
 import numpy as np
 from tensorflow.keras.models import load_model
-from tensorflow.keras.preprocessing import image
+from tensorflow.keras.preprocessing.image import img_to_array
 from PIL import Image
+import os
 
-# ✅ Absolute path fix for local + Streamlit cloud
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "..", "models", "best_model.h5")
+# ---------------- PATHS ----------------
+MODEL_PATH = os.path.join("models", "best_model.h5")
+LABEL_PATH = os.path.join("models", "class_indices.json")
 
+# ---------------- LOAD MODEL ----------------
 model = load_model(MODEL_PATH)
 
-# Labels must match the training classes
-labels = [
-    'Tomato___Bacterial_spot',
-    'Tomato___Early_blight',
-    'Tomato___Late_blight',
-    'Tomato___Leaf_Mold',
-    'Tomato___Healthy'
-]
+# ---------------- LOAD CLASS LABELS ----------------
+with open(LABEL_PATH, "r") as f:
+    class_indices = json.load(f)
 
-def predict(input_data):
-    """
-    Predict the disease from a PIL image or a file path.
-    """
-    if isinstance(input_data, str):
-        img = Image.open(input_data).convert('RGB')
-    elif isinstance(input_data, Image.Image):
-        img = input_data
-    else:
-        raise ValueError("Input must be a PIL Image or a file path.")
+# Reverse mapping: index → class name
+labels = {v: k for k, v in class_indices.items()}
 
+# ---------------- PREDICTION FUNCTION ----------------
+def predict(img):
+    """
+    Predict plant disease from a PIL Image.
+    Returns: (label, confidence)
+    """
+
+    if not isinstance(img, Image.Image):
+        img = Image.open(img)
+
+    # Preprocess image
+    img = img.convert("RGB")
     img = img.resize((224, 224))
-    img_array = image.img_to_array(img) / 255.0
+
+    img_array = img_to_array(img)
+    img_array = img_array / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    preds = model.predict(img_array)[0]
-    index = np.argmax(preds)
+    # Predict
+    predictions = model.predict(img_array)
+    confidence = float(np.max(predictions))
+    class_index = int(np.argmax(predictions))
+    label = labels[class_index]
 
-    return labels[index], float(preds[index])
+    return label, confidence

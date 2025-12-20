@@ -1,12 +1,7 @@
-tensorflow
-keras
-opencv-python
-pillow
+tensorflow==2.15.0
 numpy
-pandas
-matplotlib
-scikit-learn
-albumentations
-seaborn
+pillow
+opencv-python
 streamlit
-tqdm
+scikit-learn
+matplotlib

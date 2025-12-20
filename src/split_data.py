@@ -1,24 +1,46 @@
 import os
 import shutil
-from sklearn.model_selection import train_test_split
+import random
 
-def split_data(source_dir, dest_dir, train_ratio=0.7, val_ratio=0.15, test_ratio=0.15):
-    classes = os.listdir(source_dir)
+RAW_DIR = "data/raw"
+PROCESSED_DIR = "data/processed"
+
+TRAIN_SPLIT = 0.8
+VAL_SPLIT = 0.1
+TEST_SPLIT = 0.1
+
+random.seed(42)
+
+def create_dirs(classes):
+    for split in ["train", "val", "test"]:
+        for cls in classes:
+            os.makedirs(os.path.join(PROCESSED_DIR, split, cls), exist_ok=True)
+
+def split_dataset():
+    classes = os.listdir(RAW_DIR)
+    create_dirs(classes)
+
     for cls in classes:
-        cls_path = os.path.join(source_dir, cls)
-        if not os.path.isdir(cls_path):
-            continue
+        images = os.listdir(os.path.join(RAW_DIR, cls))
+        random.shuffle(images)
 
-        images = os.listdir(cls_path)
-        train, temp = train_test_split(images, test_size=(1 - train_ratio), random_state=42)
-        val, test = train_test_split(temp, test_size=(test_ratio / (test_ratio + val_ratio)), random_state=42)
+        total = len(images)
+        train_end = int(total * TRAIN_SPLIT)
+        val_end = int(total * (TRAIN_SPLIT + VAL_SPLIT))
 
-        for subset, subset_data in zip(["train", "val", "test"], [train, val, test]):
-            subset_dir = os.path.join(dest_dir, subset, cls)
-            os.makedirs(subset_dir, exist_ok=True)
-            for img in subset_data:
-                shutil.copy(os.path.join(cls_path, img), os.path.join(subset_dir, img))
+        splits = {
+            "train": images[:train_end],
+            "val": images[train_end:val_end],
+            "test": images[val_end:]
+        }
+
+        for split, imgs in splits.items():
+            for img in imgs:
+                src = os.path.join(RAW_DIR, cls, img)
+                dst = os.path.join(PROCESSED_DIR, split, cls, img)
+                shutil.copy2(src, dst)
+
+        print(f"{cls}: {len(splits['train'])} train | {len(splits['val'])} val | {len(splits['test'])} test")
 
 if __name__ == "__main__":
-    split_data("../data/raw", "../data/processed")
-    print("✅ Data split into train/val/test successfully!")
+    split_dataset()
