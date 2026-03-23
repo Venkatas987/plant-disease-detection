@@ -112,7 +112,6 @@ if uploaded_file:
     col1, col2 = st.columns([1.1, 1], gap="large")
 
     with col1:
-        st.markdown('<div class="glass-card">', unsafe_allow_html=True)
         st.image(image, use_container_width=True)
         st.markdown('</div>', unsafe_allow_html=True)
 
