@@ -37,7 +37,7 @@ Installation
 
 Clone the repository:
 
-git clone https://github.com/AKSHAYA1323/plant-disease-detection.git
+git clone https://github.com/Venkatas987/plant-disease-detection.git
 cd plant-disease-detection
 
 
